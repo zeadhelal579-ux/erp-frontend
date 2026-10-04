@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { FormField } from '@/components/FormField';
+import { isMockMode } from '@/lib/api-client';
+import { MOCK_ACCOUNTS } from '@/lib/mock/accounts';
 
 export function LoginPage() {
   const { login, isLoading, isAuthenticated } = useAuth();
@@ -16,15 +18,19 @@ export function LoginPage() {
     return <Navigate to="/" replace />;
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function signIn(user: string, pass: string) {
     setError(null);
     try {
-      await login(username, password);
+      await login(user, pass);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid username or password');
     }
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    void signIn(username, password);
   }
 
   return (
@@ -80,6 +86,27 @@ export function LoginPage() {
               {!isLoading && <ArrowRight size={16} />}
             </button>
           </form>
+
+          {isMockMode && (
+            <div className="mt-6 border-t border-gray-100 pt-4">
+              <p className="mb-1 text-center text-xs font-semibold text-amber-700">Demo mode — sample data, no backend</p>
+              <p className="mb-3 text-center text-xs text-gray-500">Pick a role to sign in (any password works):</p>
+              <div className="grid grid-cols-2 gap-2">
+                {MOCK_ACCOUNTS.map((account) => (
+                  <button
+                    key={account.username}
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => void signIn(account.username, 'demo')}
+                    className="rounded-md border border-gray-200 px-2 py-2 text-left text-xs transition-colors hover:border-brand-200 hover:bg-brand-50 disabled:opacity-60"
+                  >
+                    <span className="block font-medium text-gray-800">{account.roleLabel}</span>
+                    <span className="block text-gray-500">{account.username}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

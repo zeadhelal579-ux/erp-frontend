@@ -20,7 +20,16 @@ export function registerUnauthorizedHandler(handler: () => void) {
   onUnauthorized = handler;
 }
 
-export const apiClient = axios.create({ baseURL });
+// الوضع التجريبي: VITE_USE_MOCK_API=true بيشغّل الواجهة على بيانات وهمية داخل المتصفح
+// من غير باك إند (راجع src/lib/mock). الـ adapter بيتحمّل lazy فمش بيدخل في الـ bundle
+// الأساسي، وبيتفعّل بس لما المتغير يبقى true.
+export const isMockMode = import.meta.env.VITE_USE_MOCK_API === 'true';
+
+export const apiClient = axios.create(
+  isMockMode
+    ? { baseURL, adapter: (config) => import('./mock/adapter').then((m) => m.mockAdapter(config)) }
+    : { baseURL }
+);
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (inMemoryToken) {

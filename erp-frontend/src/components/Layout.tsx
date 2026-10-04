@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { isMockMode } from '@/lib/api-client';
 import type { UserRole } from '@/lib/types/api';
 
 interface NavItem {
@@ -72,6 +73,12 @@ export function AppLayout() {
           </div>
           <span className="truncate font-semibold text-gray-800">Production Management</span>
         </div>
+
+        {isMockMode && (
+          <div className="mx-3 mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Demo data — changes reset on refresh
+          </div>
+        )}
 
         <nav className="flex-1 space-y-1 px-3 py-4">
           {visibleItems.map(({ to, label, icon: Icon }) => (

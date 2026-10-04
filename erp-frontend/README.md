@@ -16,6 +16,23 @@ npm run dev
 Requires the backend running with CORS enabled for `http://localhost:5173`, and the
 JWT secret / SuperAdmin password configured per `04_Backend_Migration_Report.md`.
 
+## Demo mode (no backend needed)
+
+While the backend is unfinished, the whole UI can run on sample data that lives inside the
+browser (`src/lib/mock/`). It is an axios adapter, so every screen, hook and role guard runs
+unchanged. It reproduces the real flows: raw material -> lab -> production batch -> lab ->
+manager approval -> shipping, plus rejection, quarantine, rework and destroy paths.
+
+- **On Vercel:** already on, via the committed `.env.production` (`VITE_USE_MOCK_API=true`).
+  No `VITE_API_BASE_URL` is required in this mode; the build guard in `vite.config.ts` is skipped.
+- **Locally:** put `VITE_USE_MOCK_API=true` in `.env`, then `npm run dev`.
+- **Sign in:** the login page shows one button per role (any password works). Usernames:
+  `storekeeper`, `production`, `lab`, `quality`, `manager`, `admin`.
+- Data is in memory only: refreshing the page restores the seed data (and signs you out).
+- **Switching to the real backend:** set `VITE_USE_MOCK_API=false` in `.env.production` and
+  provide `VITE_API_BASE_URL` (https, ending in `/api/v1`), then push.
+- Check the mock logic with `npx tsx verify-mock-api.ts` (22 assertions over a full lifecycle).
+
 ## Deploying to Vercel
 
 1. Push the project to Git. If the repo root is the folder *containing* `erp-frontend/`,
@@ -23,7 +40,7 @@ JWT secret / SuperAdmin password configured per `04_Backend_Migration_Report.md`
 2. Framework Preset = **Vite** (auto-detected). Build command `npm run build`, output `dist`
    (already declared in `vercel.json`, which also adds the SPA rewrite so deep links and
    page refreshes don't 404).
-3. **Settings → Environment Variables:** add `VITE_API_BASE_URL` (Production, and Preview if
+3. **Real backend only** (skip while in demo mode) **— Settings → Environment Variables:** add `VITE_API_BASE_URL` (Production, and Preview if
    you use it) = the real backend URL, **https** and ending in `/api/v1`. The production
    build **fails on purpose** if this variable is missing (see `vite.config.ts`) instead of
    silently shipping a site that calls `localhost`.
